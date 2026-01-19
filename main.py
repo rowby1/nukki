@@ -10,6 +10,7 @@ app = FastAPI()
 
 # 1. 모델 로드 (GPU 사용)
 device = "cuda" if torch.cuda.is_available() else "cpu"
+print("device: ", device)
 model = AutoModelForImageSegmentation.from_pretrained(
     "ZhengPeng7/BiRefNet", 
     trust_remote_code=True
