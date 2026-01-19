@@ -6,3 +6,7 @@ torchvision
 transformers
 pillow
 accelerate
+einops
+kornia
+timm
+hf_xet
