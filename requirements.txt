@@ -10,3 +10,4 @@ einops
 kornia
 timm
 hf_xet
+intel_extension_for_pytorch

@@ -6,7 +6,7 @@ BiRefNet 모델을 활용하여 이미지의 배경을 고품질로 제거하는
 
 - **고품질 배경 제거**: 최신 BiRefNet 모델을 사용하여 머리카락 등 미세한 부분까지 정교하게 배경을 제거합니다.
 - **REST API 제공**: FastAPI로 구현되어 있어 웹, 앱 등 다양한 클라이언트에서 쉽게 연동 가능합니다.
-- **GPU 가속 지원**: CUDA가 지원되는 환경에서 고속 추론이 가능합니다 (CPU 모드도 자동 지원).
+- **하드웨어 가속 지원**: CUDA(NVIDIA), Intel Arc(XPU), Intel NPU를 모두 지원하여 다양한 환경에서 고속 추론이 가능합니다.
 - **Docker 지원**: 컨테이너 환경에서 손쉽게 배포 및 실행이 가능합니다.
 
 ## 설치 및 실행 (Installation & Usage)
@@ -14,7 +14,13 @@ BiRefNet 모델을 활용하여 이미지의 배경을 고품질로 제거하는
 ### 사전 요구 사항 (Prerequisites)
 
 - Python 3.10 이상
-- NVIDIA GPU + CUDA (권장, 없을 시 CPU로 동작)
+- 가속기 권장 사항:
+  - NVIDIA GPU (CUDA)
+  - Intel GPU (XPU)
+    - **Intel Arc A-Series / B-Series Graphics** (외장 그래픽)
+    - **Intel Core Ultra Processors with Intel Arc Graphics** (내장 그래픽)
+    - Intel Data Center GPU Max / Flex Series
+  - Intel Core Ultra NPU (Linux/Windows)
 
 ### 1. 로컬 환경에서 실행
 

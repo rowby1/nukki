@@ -8,14 +8,50 @@ import io
 
 app = FastAPI()
 
-# 1. 모델 로드 (GPU 사용)
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print("device: ", device)
-model = AutoModelForImageSegmentation.from_pretrained(
-    "ZhengPeng7/BiRefNet", 
-    trust_remote_code=True
-)
-model.to(device)
+# 1. 모델 로드 및 장치 설정 (CUDA -> XPU/Arc -> NPU -> CPU)
+device = "cpu"
+use_npu = False
+
+# 먼저 GPU(CUDA/XPU) 확인
+if torch.cuda.is_available():
+    device = "cuda"
+    print("Device: CUDA")
+elif hasattr(torch, 'xpu') and torch.xpu.is_available():
+    device = "xpu"
+    print("Device: Intel XPU (Arc GPU)")
+else:
+    # IPEX (Intel Extension for PyTorch) 확인
+    try:
+        import intel_extension_for_pytorch as ipex
+        if ipex.xpu.is_available():
+            device = "xpu"
+            print("Device: Intel XPU (Arc GPU) via IPEX")
+    except ImportError:
+        pass
+
+# GPU가 감지된 경우 일반적인 방식으로 로드
+if device != "cpu":
+    model = AutoModelForImageSegmentation.from_pretrained("ZhengPeng7/BiRefNet", trust_remote_code=True)
+    model.to(device)
+else:
+    # GPU가 없으면 NPU 시도 -> 실패 시 CPU
+    try:
+        from intel_npu_acceleration_library import compile, float16
+        from intel_npu_acceleration_library.compiler import CompilerConfig
+        print("Device: Intel NPU (Attempting to compile...)")
+        model = AutoModelForImageSegmentation.from_pretrained("ZhengPeng7/BiRefNet", trust_remote_code=True)
+        # NPU 설정을 위한 CompilerConfig 사용
+        conf = CompilerConfig(dtype=float16)
+        model = compile(model, conf) 
+        use_npu = True
+        print("Success: Model compiled for NPU")
+    except Exception as e:
+        print(f"NPU initialization failed or not available: {e}")
+        print("Device: CPU")
+        device = "cpu"
+        model = AutoModelForImageSegmentation.from_pretrained("ZhengPeng7/BiRefNet", trust_remote_code=True)
+        model.to(device)
+
 model.eval()
 
 # 2. 이미지 전처리 설정
@@ -31,8 +67,13 @@ async def remove_background(file: UploadFile = File(...)):
     input_image = Image.open(io.BytesIO(await file.read())).convert("RGB")
     original_size = input_image.size
     
-    # 전처리 및 추론
-    input_tensor = transform_image(input_image).unsqueeze(0).to(device)
+    # 전처리
+    input_tensor = transform_image(input_image).unsqueeze(0)
+    
+    # 장치로 이동 (NPU 사용 시에는 보통 CPU 텐서를 입력으로 받음)
+    if not use_npu:
+        input_tensor = input_tensor.to(device)
+    
     with torch.no_grad():
         preds = model(input_tensor)[-1].sigmoid().cpu()
     
