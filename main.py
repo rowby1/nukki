@@ -31,7 +31,7 @@ else:
 
 # GPU가 감지된 경우 일반적인 방식으로 로드
 if device != "cpu":
-    model = AutoModelForImageSegmentation.from_pretrained("ZhengPeng7/BiRefNet", trust_remote_code=True)
+    model = AutoModelForImageSegmentation.from_pretrained("ZhengPeng7/BiRefNet", trust_remote_code=True, low_cpu_mem_usage=False, device_map=None)
     model.to(device)
 else:
     # GPU가 없으면 NPU 시도 -> 실패 시 CPU

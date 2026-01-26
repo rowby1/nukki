@@ -1,5 +1,5 @@
 # NVIDIA CUDA 지원 파이토치 이미지 사용
-FROM pytorch/pytorch:2.9.1-cuda12.8-cudnn9-runtime
+FROM pytorch/pytorch:2.9.1-cuda13.0-cudnn9-runtime
 
 WORKDIR /app
 
@@ -17,4 +17,4 @@ COPY main.py .
 EXPOSE 8001
 
 # 서버 실행
-CMD ["uvicorn", "main.py:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "main:app"]

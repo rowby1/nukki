@@ -3,11 +3,11 @@ uvicorn
 python-multipart
 torch
 torchvision
-transformers
 pillow
-accelerate
 einops
 kornia
 timm
 hf_xet
 intel_extension_for_pytorch
+transformers==4.37.2
+accelerate==0.27.0
